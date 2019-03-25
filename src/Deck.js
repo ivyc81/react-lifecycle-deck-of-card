@@ -10,8 +10,8 @@ class Deck extends Component {
         super(props);
         this.state = {
             loading: true,
-            deckId:'',
-            remaining: 0,
+            deckId: '',
+            remaining: null,
             cards: [],
         }
         this.drawCard = this.drawCard.bind(this);
@@ -20,36 +20,46 @@ class Deck extends Component {
     async componentDidMount() {
         const response = await axios.get(`${BASE_URL}/new/shuffle/?deck_count=1`);
 
+        this.newCardTimer = setInterval(async () => {
+            await this.drawCard()
+        }, 3000);
 
         this.setState({
             loading: false,
             deckId: response.data.deck_id,
-            remaining: response.data.remaining});
+            remaining: response.data.remaining
+        });
     }
 
     async drawCard() {
         const response = await axios.get(`${BASE_URL}/${this.state.deckId}/draw/?count=1`);
 
-        const cardObj = { img: response.data.cards[0].image, id: uuid() };
+        this.setState(st => {
+            if (st.remaining === 0) {
+                clearInterval(this.newCardTimer);
+            } else {
+                const cardObj = { img: response.data.cards[0].image, id: uuid() };
+                const newCards = st.cards.map((card) => ({ ...card }));
+                newCards.push(cardObj);
 
-        const newCards = this.state.cards.map((card) => ({...card}));
+                return {
+                    remaining: response.data.remaining,
+                    cards: newCards,
+                }
+            }
+        });
 
-        newCards.push(cardObj);
-        // const newCardImages = [...this.state.cardImages, response.data.cards[0].image];
-
-        // const newCardIds = [...this.state.cardIds, uuid()];
-
-        this.setState({
-            remaining: response.data.remaining,
-            cards: newCards,
-        })
     }
 
     renderCards() {
-        return(
-            this.state.cards.map((card)=>
-            <Card key={ card.id } imageUrl={ card.img }/>)
+        return (
+            this.state.cards.map((card) =>
+                <Card key={card.id} imageUrl={card.img} />)
         )
+    }
+
+    componentWillUnmount() {
+
     }
 
     render() {
@@ -58,14 +68,14 @@ class Deck extends Component {
             <div className="Deck">
                 <div className="Deck-top">
                     <h1>Deck of cards</h1>
-                    { this.state.loading && <div>Shuffling ...</div> }
-                    { this.state.remaining
+                    {this.state.loading && <div>Shuffling ...</div>}
+                    {/* { this.state.remaining
                         ? <button onClick={ this.drawCard }>Give me a card</button>
                         : null
-                    }
+                    } */}
                 </div>
                 <div className="Deck-cards">
-                    { cards }
+                    {cards}
                 </div>
             </div>
         );
