@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import uuid from 'uuid/v4';
 import Card from './Card';
-// import './Deck.css';
+import './Deck.css';
 
 const BASE_URL = 'https://deckofcardsapi.com/api/deck'
 class Deck extends Component {
@@ -56,13 +56,17 @@ class Deck extends Component {
         const cards = this.renderCards();
         return (
             <div className="Deck">
-                <h1>Deck of cards</h1>
-                { this.state.loading && <div>Shuffling ...</div> }
-                { this.state.remaining
-                    ? <button onClick={ this.drawCard }>Give me a card</button>
-                    : null
-                }
-                { cards }
+                <div className="Deck-top">
+                    <h1>Deck of cards</h1>
+                    { this.state.loading && <div>Shuffling ...</div> }
+                    { this.state.remaining
+                        ? <button onClick={ this.drawCard }>Give me a card</button>
+                        : null
+                    }
+                </div>
+                <div className="Deck-cards">
+                    { cards }
+                </div>
             </div>
         );
     }
